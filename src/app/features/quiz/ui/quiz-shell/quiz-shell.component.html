@@ -1,0 +1,52 @@
+<section class="quiz">
+  <header class="quiz__header">
+    <div>
+      <h1 class="quiz__title">Backend Trivia</h1>
+      <p class="quiz__subtitle">Quick backend knowledge checks with four choices and one correct answer.</p>
+    </div>
+    <button type="button" class="button button--ghost" (click)="startNewSession()" [disabled]="isLoading()">
+      New session
+    </button>
+  </header>
+
+  <p *ngIf="session() as activeSession" class="quiz__meta">Session: {{ activeSession.id }}</p>
+
+  <p *ngIf="errorMessage() as error" class="quiz__status quiz__status--warning">{{ error }}</p>
+
+  <article *ngIf="question() as activeQuestion" class="quiz__card">
+    <h2 class="quiz__question">{{ activeQuestion.prompt }}</h2>
+
+    <ul class="quiz__options">
+      <li *ngFor="let option of activeQuestion.options">
+        <button
+          type="button"
+          class="quiz__option"
+          [class.quiz__option--selected]="selectedOptionId() === option.id"
+          (click)="selectOption(option.id)"
+          [disabled]="isLoading()"
+        >
+          {{ option.label }}
+        </button>
+      </li>
+    </ul>
+
+    <button type="button" class="button button--primary" (click)="submitAnswer()" [disabled]="!canSubmit()">
+      Submit answer
+    </button>
+  </article>
+
+  <section
+    *ngIf="feedback() as result"
+    class="quiz__status"
+    [class.quiz__status--success]="result.correct"
+    [class.quiz__status--error]="!result.correct"
+  >
+    <p class="quiz__status-title">
+      {{ result.correct ? 'Correct!' : 'Incorrect, but keep going.' }}
+    </p>
+    <p *ngIf="result.explanation" class="quiz__status-body">{{ result.explanation }}</p>
+    <button type="button" class="button button--ghost" (click)="clearFeedback()">Dismiss</button>
+  </section>
+
+  <p *ngIf="isLoading()" class="quiz__status">Loading…</p>
+</section>
