@@ -4,15 +4,13 @@ import { map } from 'rxjs/operators';
 import { MeasurementType, MetricSeries } from '../../../core/models/measurement.models';
 import { HealthMetricsApiService } from '../../../core/services/health-metrics-api.service';
 import { MeasurementTransformer } from '../../../core/utils/measurement-transformer';
-import { AuthService } from '../../../core/auth/auth.service';
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class HealthMetricsStateService {
   private readonly apiService = inject(HealthMetricsApiService);
-  private readonly authService = inject(AuthService);
-
   private allMetricsSubject = new BehaviorSubject<MetricSeries[]>([]);
   public allMetrics$ = this.allMetricsSubject.asObservable();
 
