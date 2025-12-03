@@ -13,7 +13,7 @@ export function initializeKeycloak(keycloak: KeycloakService): () => Promise<boo
         onLoad: 'login-required',
         checkLoginIframe: false,
       },
-      enableBearerInterceptor: true,
+      enableBearerInterceptor: false,
       bearerPrefix: 'Bearer',
       bearerExcludedUrls: ['/assets', '/public'],
     });
