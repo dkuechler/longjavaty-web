@@ -1,5 +1,5 @@
 {
-  "name": "quiz-app",
+  "name": "longjavaty-web-app",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:quiz-app": "node dist/quiz-app/server/server.mjs"
+    "serve:ssr:longjavaty-web-app": "node dist/longjavaty-web-app/server/server.mjs"
   },
   "prettier": {
     "printWidth": 100,
