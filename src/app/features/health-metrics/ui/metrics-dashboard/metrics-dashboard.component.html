@@ -1,0 +1,30 @@
+<div class="dashboard-container">
+  <h1>Health Metrics Dashboard</h1>
+
+  <div class="metrics-overview">
+    @if (allMetrics$ | async; as metrics) {
+      @if (metrics.length > 0) {
+        <div class="metrics-list">
+          @for (metric of metrics; track metric.measurementType) {
+            <div class="metric-card">
+              <h3 [style.color]="metric.color">{{ metric.label }}</h3>
+              <p>{{ metric.data.length }} measurements</p>
+              @if (metric.data.length > 0) {
+                <p class="latest-value">
+                  Latest: {{ metric.data[metric.data.length - 1].value }} {{ metric.data[metric.data.length - 1].unit }}
+                </p>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="no-data">No health metrics data available yet.</p>
+      }
+    }
+  </div>
+
+  <div class="chart-section">
+    <h2>All Metrics Over Time</h2>
+    <p class="placeholder">📊 Chart visualization coming soon...</p>
+  </div>
+</div>
