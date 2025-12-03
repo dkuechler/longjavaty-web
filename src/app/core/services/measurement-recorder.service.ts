@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import {
   MeasurementRequest,
   MeasurementResponse,
@@ -30,8 +30,9 @@ export class MeasurementRecorderService {
 
   recordMultipleMeasurements(
     measurements: Array<{ type: MeasurementType; value: number; recordedAt?: Date }>
-  ): Observable<MeasurementResponse>[] {
-    return measurements.map((m) => this.recordMeasurement(m.type, m.value, m.recordedAt));
+  ): Observable<MeasurementResponse[]> {
+    const requests = measurements.map((m) => this.recordMeasurement(m.type, m.value, m.recordedAt));
+    return forkJoin(requests);
   }
 
   recordHeartRate(value: number, recordedAt?: Date): Observable<MeasurementResponse> {
