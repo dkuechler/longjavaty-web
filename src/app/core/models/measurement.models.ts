@@ -5,14 +5,23 @@ export enum MeasurementType {
   STEPS = 'STEPS',
 }
 
+export interface MeasurementRequest {
+  measurementType: MeasurementType;
+  value: number;
+  recordedAt: string;
+  sourceId: string;
+}
+
 export interface MeasurementResponse {
   id: number;
   userId: string;
   measurementType: MeasurementType;
   value: number;
   unit: string;
-  recordedAt: string; // ISO 8601 date string
+  recordedAt: string;
   sourceId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface MeasurementDataPoint {

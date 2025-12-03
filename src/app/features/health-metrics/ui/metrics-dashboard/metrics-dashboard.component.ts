@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HealthMetricsStateService } from '../../data/health-metrics-state.service';
 import { MetricSeries } from '../../../../core/models/measurement.models';
 import { Observable } from 'rxjs';
+import { AuthService } from '../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-metrics-dashboard',
@@ -12,15 +13,16 @@ import { Observable } from 'rxjs';
   styleUrl: './metrics-dashboard.component.css',
 })
 export class MetricsDashboardComponent implements OnInit {
+  private readonly metricsState = inject(HealthMetricsStateService);
+  private readonly authService = inject(AuthService);
+
   allMetrics$: Observable<MetricSeries[]>;
 
-  constructor(private metricsState: HealthMetricsStateService) {
+  constructor() {
     this.allMetrics$ = this.metricsState.allMetrics$;
   }
 
   ngOnInit(): void {
-    // TODO: Get actual user ID from auth service
-    const mockUserId = '00000000-0000-0000-0000-000000000000';
-    this.metricsState.loadAllMetrics(mockUserId);
+    this.metricsState.loadAllMetrics();
   }
 }
