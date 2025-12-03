@@ -1,24 +1,23 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MeasurementType, MetricSeries } from '../../../core/models/measurement.models';
 import { HealthMetricsApiService } from '../../../core/services/health-metrics-api.service';
 import { MeasurementTransformer } from '../../../core/utils/measurement-transformer';
 
+
 @Injectable({
   providedIn: 'root',
 })
 export class HealthMetricsStateService {
+  private readonly apiService = inject(HealthMetricsApiService);
   private allMetricsSubject = new BehaviorSubject<MetricSeries[]>([]);
   public allMetrics$ = this.allMetricsSubject.asObservable();
 
-  constructor(private apiService: HealthMetricsApiService) {}
-
-  // Fetches all measurement types in parallel, then transforms each array into a MetricSeries
-  loadAllMetrics(userId: string): void {
+  loadAllMetrics(from?: string, to?: string): void {
     const allTypes = Object.values(MeasurementType);
 
-    this.apiService.getAllMeasurements(userId).subscribe({
+    this.apiService.getMeasurementsForTypes(allTypes, from, to).subscribe({
       next: (measurementArrays) => {
         const series = MeasurementTransformer.toMultipleMetricSeries(allTypes, measurementArrays);
         this.allMetricsSubject.next(series);
@@ -27,9 +26,9 @@ export class HealthMetricsStateService {
     });
   }
 
-  loadMetricByType(userId: string, measurementType: MeasurementType): Observable<MetricSeries> {
+  loadMetricByType(measurementType: MeasurementType, from?: string, to?: string): Observable<MetricSeries> {
     return this.apiService
-      .getMeasurementsByType(userId, measurementType)
+      .getMeasurements(measurementType, from, to)
       .pipe(map((measurements) => MeasurementTransformer.toMetricSeries(measurementType, measurements)));
   }
 
