@@ -72,9 +72,7 @@ export class AnalysisComponent implements OnInit {
     forkJoin(comparisonObservables)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((comparisons) => {
-        const validComparisons = comparisons.filter(
-          (c): c is UserComparison => c !== null && c !== undefined
-        );
+        const validComparisons = comparisons.filter((c): c is UserComparison => c !== null);
         this.comparisons.set(validComparisons);
         this.loading.set(false);
       });
