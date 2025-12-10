@@ -57,9 +57,17 @@ export class BenchmarkService {
     });
   }
 
+  /**
+   * Determines if lower values are better for a given metric type.
+   * For example, resting heart rate is better when lower.
+   */
+  private isLowerBetterMetric(metricType: MeasurementType): boolean {
+    return metricType === MeasurementType.RESTING_HEART_RATE;
+  }
+
   private calculatePercentile(value: number, ageGroup: AgeGroupBenchmark, metricType: MeasurementType): number {
     const { p10, p25, p50, p75, p90 } = ageGroup.percentiles;
-    const isLowerBetter = metricType === MeasurementType.RESTING_HEART_RATE;
+    const isLowerBetter = this.isLowerBetterMetric(metricType);
 
     // Calculate raw percentile (assumes higher values = higher percentiles)
     let rawPercentile: number;
@@ -88,10 +96,13 @@ export class BenchmarkService {
   ): 'excellent' | 'good' | 'average' | 'below-average' | 'poor' {
     // Percentile is already inverted for "lower is better" metrics in calculatePercentile
     // So we can use the same rating logic for all metrics
-    if (percentile >= 75) return 'excellent';
-    if (percentile >= 60) return 'good';
-    if (percentile >= 40) return 'average';
-    if (percentile >= 25) return 'below-average';
+    // Cap percentile at valid range [0, 100]
+    const cappedPercentile = Math.max(0, Math.min(100, percentile));
+    
+    if (cappedPercentile >= 75) return 'excellent';
+    if (cappedPercentile >= 60) return 'good';
+    if (cappedPercentile >= 40) return 'average';
+    if (cappedPercentile >= 25) return 'below-average';
     return 'poor';
   }
 }
