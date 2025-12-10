@@ -1,7 +1,12 @@
+import { ChartDataset } from 'chart.js';
 import { MetricSeries, MeasurementType } from '../../../../core/models/measurement.models';
 import { DashboardChartDataset } from './dashboard-chart.types';
 
-export function createChartDatasets(metrics: MetricSeries[]): DashboardChartDataset[] {
+export interface MetricChartDataset extends ChartDataset<'line', { x: number; y: number }[]> {
+  metricType: MeasurementType;
+}
+
+export function createChartDatasets(metrics: MetricSeries[]): MetricChartDataset[] {
   return metrics
     .filter((metric) => metric.data.length > 0)
     .map((metric) => ({
@@ -25,7 +30,7 @@ export function createChartDatasets(metrics: MetricSeries[]): DashboardChartData
     }));
 }
 
-export function highlightDataset(datasets: DashboardChartDataset[], targetMetricType: MeasurementType): DashboardChartDataset[] {
+export function highlightDataset(datasets: MetricChartDataset[], targetMetricType: MeasurementType): MetricChartDataset[] {
   return datasets.map((dataset) => ({
     ...dataset,
     borderWidth: dataset.metricType === targetMetricType ? 4 : 1.5,
@@ -39,7 +44,7 @@ export function highlightDataset(datasets: DashboardChartDataset[], targetMetric
   }));
 }
 
-export function resetDatasetHighlight(datasets: DashboardChartDataset[]): DashboardChartDataset[] {
+export function resetDatasetHighlight(datasets: MetricChartDataset[]): MetricChartDataset[] {
   return datasets.map((dataset) => ({
     ...dataset,
     borderWidth: 2.5,
