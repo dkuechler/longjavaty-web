@@ -41,6 +41,10 @@ export class MetricsDashboardComponent implements OnInit {
   constructor() {
     this.allMetrics$ = this.metricsState.allMetrics$;
 
+    this.allMetrics$.pipe(takeUntilDestroyed()).subscribe((metrics) => {
+      this.allMetricsData.set(metrics);
+    });
+
     effect(() => {
       const filtered = this.filteredMetrics();
       this.updateChartData(filtered);
@@ -49,9 +53,6 @@ export class MetricsDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.metricsState.loadAllMetrics();
-    this.allMetrics$.pipe(takeUntilDestroyed()).subscribe((metrics) => {
-      this.allMetricsData.set(metrics);
-    });
   }
 
   private updateChartData(metrics: MetricSeries[]): void {
