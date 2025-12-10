@@ -1,8 +1,7 @@
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { forkJoin, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import { BenchmarkService } from '../../../../core/services/benchmark.service';
@@ -57,11 +56,11 @@ export class AnalysisComponent implements OnInit {
       .filter((metric) => metric.data.length > 0)
       .map((metric) => {
         const latestValue = metric.data[metric.data.length - 1].value;
-        return this.benchmarkService
-          .compareUserToAgeGroup(metric.measurementType, latestValue, this.userAge)
-          .pipe(
-            map((comparison) => (comparison ? comparison : null))
-          );
+        return this.benchmarkService.compareUserToAgeGroup(
+          metric.measurementType,
+          latestValue,
+          this.userAge
+        );
       });
 
     if (comparisonObservables.length === 0) {
@@ -73,7 +72,10 @@ export class AnalysisComponent implements OnInit {
     forkJoin(comparisonObservables)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((comparisons) => {
-        this.comparisons.set(comparisons.filter((c) => c !== null) as UserComparison[]);
+        const validComparisons = comparisons.filter(
+          (c): c is UserComparison => c !== null && c !== undefined
+        );
+        this.comparisons.set(validComparisons);
         this.loading.set(false);
       });
   }
