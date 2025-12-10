@@ -2,8 +2,9 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
-import { forkJoin } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BenchmarkService } from '../../../../core/services/benchmark.service';
 import { HealthMetricsStateService } from '../../data/health-metrics-state.service';
 import { UserProfileService } from '../../../../core/services/user-profile.service';
@@ -27,7 +28,7 @@ export class AnalysisComponent implements OnInit {
   private readonly metricsState = inject(HealthMetricsStateService);
   private readonly userProfileService = inject(UserProfileService);
 
-  userAge = signal<number | null>(null);
+  userAge = signal<number>(28); // Default to 28, will be updated if user data is available
   comparisons = signal<UserComparison[]>([]);
   loading = signal(true);
   allMetrics = signal<MetricSeries[]>([]);
@@ -54,6 +55,12 @@ export class AnalysisComponent implements OnInit {
           // Load metrics
           this.metricsState.loadAllMetrics();
           return this.metricsState.allMetrics$;
+        }),
+        takeUntilDestroyed(),
+        catchError((error) => {
+          console.error('Error loading user age or metrics', error);
+          this.loading.set(false);
+          return of([] as MetricSeries[]);
         })
       )
       .subscribe((metrics) => {
@@ -64,12 +71,6 @@ export class AnalysisComponent implements OnInit {
 
   private loadComparisons(metrics: MetricSeries[]): void {
     const age = this.userAge();
-
-    // Only proceed if we have a valid age
-    if (age === null) {
-      this.loading.set(false);
-      return;
-    }
 
     // Collect all comparison observables
     const comparisonObservables = metrics
@@ -91,11 +92,18 @@ export class AnalysisComponent implements OnInit {
     }
 
     // Wait for all comparisons to complete before updating state
-    forkJoin(comparisonObservables).subscribe((results) => {
-      const comparisons = results.filter((c) => c !== null) as UserComparison[];
-      this.comparisons.set(comparisons);
-      this.loading.set(false);
-    });
+    forkJoin(comparisonObservables)
+      .pipe(
+        catchError((error) => {
+          console.error('Error loading comparisons', error);
+          return of([]);
+        })
+      )
+      .subscribe((results) => {
+        const comparisons = results.filter((c) => c !== null) as UserComparison[];
+        this.comparisons.set(comparisons);
+        this.loading.set(false);
+      });
   }
 
   getRatingColor(rating: string): string {
