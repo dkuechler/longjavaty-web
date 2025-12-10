@@ -35,10 +35,6 @@ export class MeasurementRecorderService {
     return forkJoin(requests);
   }
 
-  recordHeartRate(value: number, recordedAt?: Date): Observable<MeasurementResponse> {
-    return this.recordMeasurement(MeasurementType.HEART_RATE, value, recordedAt);
-  }
-
   recordRestingHeartRate(value: number, recordedAt?: Date): Observable<MeasurementResponse> {
     return this.recordMeasurement(MeasurementType.RESTING_HEART_RATE, value, recordedAt);
   }
