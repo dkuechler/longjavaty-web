@@ -1,6 +1,7 @@
 import { MetricSeries, MeasurementType } from '../../../../core/models/measurement.models';
+import { DashboardChartDataset } from './dashboard-chart.types';
 
-export function createChartDatasets(metrics: MetricSeries[]): any[] {
+export function createChartDatasets(metrics: MetricSeries[]): DashboardChartDataset[] {
   return metrics
     .filter((metric) => metric.data.length > 0)
     .map((metric) => ({
@@ -24,7 +25,7 @@ export function createChartDatasets(metrics: MetricSeries[]): any[] {
     }));
 }
 
-export function highlightDataset(datasets: any[], targetMetricType: MeasurementType): any[] {
+export function highlightDataset(datasets: DashboardChartDataset[], targetMetricType: MeasurementType): DashboardChartDataset[] {
   return datasets.map((dataset) => ({
     ...dataset,
     borderWidth: dataset.metricType === targetMetricType ? 4 : 1.5,
@@ -36,11 +37,13 @@ export function highlightDataset(datasets: any[], targetMetricType: MeasurementT
   }));
 }
 
-export function resetDatasetHighlight(datasets: any[]): any[] {
+export function resetDatasetHighlight(datasets: DashboardChartDataset[]): DashboardChartDataset[] {
   return datasets.map((dataset) => ({
     ...dataset,
     borderWidth: 2.5,
     pointRadius: 3,
-    borderColor: dataset.borderColor.replace(/40$/, ''),
+    borderColor: typeof dataset.borderColor === 'string' 
+      ? dataset.borderColor.replace(/40$/, '') 
+      : dataset.borderColor,
   }));
 }
