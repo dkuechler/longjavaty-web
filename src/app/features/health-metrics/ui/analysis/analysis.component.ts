@@ -4,6 +4,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import { BenchmarkService } from '../../../../core/services/benchmark.service';
 import { HealthMetricsStateService } from '../../data/health-metrics-state.service';
+import { UserProfileService } from '../../../../core/services/user-profile.service';
 import { UserComparison } from '../../../../core/models/benchmark.models';
 import { MetricSeries, MeasurementType } from '../../../../core/models/measurement.models';
 import { createBaseChartOptions } from './chart-config';
@@ -22,8 +23,9 @@ import { getSegmentValue, calculateCenteredYAxis } from './chart-utils';
 export class AnalysisComponent implements OnInit {
   private readonly benchmarkService = inject(BenchmarkService);
   private readonly metricsState = inject(HealthMetricsStateService);
+  private readonly userProfileService = inject(UserProfileService);
 
-  userAge = 28;
+  userAge = signal<number | null>(null);
   comparisons = signal<UserComparison[]>([]);
   loading = signal(true);
   allMetrics = signal<MetricSeries[]>([]);
@@ -39,22 +41,36 @@ export class AnalysisComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.metricsState.loadAllMetrics();
-    this.metricsState.allMetrics$.subscribe((metrics) => {
-      this.allMetrics.set(metrics);
-      this.loadComparisons(metrics);
+    // Load user age first
+    this.userProfileService.getUserAge().subscribe((age) => {
+      // Use default age of 28 if user age is not available
+      this.userAge.set(age ?? 28);
+      
+      // Then load metrics and comparisons
+      this.metricsState.loadAllMetrics();
+      this.metricsState.allMetrics$.subscribe((metrics) => {
+        this.allMetrics.set(metrics);
+        this.loadComparisons(metrics);
+      });
     });
   }
 
   private loadComparisons(metrics: MetricSeries[]): void {
     const comparisons: UserComparison[] = [];
+    const age = this.userAge();
+
+    // Only proceed if we have a valid age
+    if (age === null) {
+      this.loading.set(false);
+      return;
+    }
 
     metrics.forEach((metric) => {
       if (metric.data.length > 0) {
         const latestValue = metric.data[metric.data.length - 1].value;
         
         this.benchmarkService
-          .compareUserToAgeGroup(metric.measurementType, latestValue, this.userAge)
+          .compareUserToAgeGroup(metric.measurementType, latestValue, age)
           .subscribe((comparison) => {
             if (comparison) {
               comparisons.push(comparison);
