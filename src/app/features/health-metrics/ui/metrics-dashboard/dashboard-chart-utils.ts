@@ -27,6 +27,7 @@ export function createChartDatasets(metrics: MetricSeries[]): MetricChartDataset
       fill: false,
       metricType: metric.measurementType,
       yAxisID: metric.measurementType === MeasurementType.STEPS ? 'y1' : 'y',
+      originalBorderColor: metric.color,
     }));
 }
 
