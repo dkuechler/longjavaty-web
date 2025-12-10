@@ -32,7 +32,10 @@ export class UserProfileService {
             ? keycloakProfile.attributes['birthdate'][0]
             : keycloakProfile.attributes['birthdate'];
           userProfile.birthDate = birthdate;
-          userProfile.age = this.calculateAge(birthdate);
+          const calculatedAge = this.calculateAge(birthdate);
+          if (calculatedAge !== null) {
+            userProfile.age = calculatedAge;
+          }
         }
 
         return userProfile;
@@ -54,16 +57,34 @@ export class UserProfileService {
 
   /**
    * Calculate age from birthdate string (ISO format YYYY-MM-DD)
+   * Returns null if the birthdate is invalid
    */
-  private calculateAge(birthdate: string): number {
-    const today = new Date();
+  private calculateAge(birthdate: string): number | null {
+    if (!birthdate || typeof birthdate !== 'string') {
+      return null;
+    }
+
     const birthDate = new Date(birthdate);
+
+    // Check if the date is valid
+    if (isNaN(birthDate.getTime())) {
+      console.warn('Invalid birthdate format:', birthdate);
+      return null;
+    }
+
+    const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
 
     // Adjust age if birthday hasn't occurred yet this year
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
+    }
+
+    // Additional validation: age should be reasonable (0-150)
+    if (age < 0 || age > 150) {
+      console.warn('Calculated age is out of reasonable range:', age);
+      return null;
     }
 
     return age;

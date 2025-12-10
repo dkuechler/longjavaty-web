@@ -2,6 +2,8 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
+import { forkJoin } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { BenchmarkService } from '../../../../core/services/benchmark.service';
 import { HealthMetricsStateService } from '../../data/health-metrics-state.service';
 import { UserProfileService } from '../../../../core/services/user-profile.service';
@@ -41,22 +43,26 @@ export class AnalysisComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Load user age first
-    this.userProfileService.getUserAge().subscribe((age) => {
-      // Use default age of 28 if user age is not available
-      this.userAge.set(age ?? 28);
-      
-      // Then load metrics and comparisons
-      this.metricsState.loadAllMetrics();
-      this.metricsState.allMetrics$.subscribe((metrics) => {
+    // Load user age first, then load metrics and comparisons
+    this.userProfileService
+      .getUserAge()
+      .pipe(
+        switchMap((age) => {
+          // Use default age of 28 if user age is not available
+          this.userAge.set(age ?? 28);
+
+          // Load metrics
+          this.metricsState.loadAllMetrics();
+          return this.metricsState.allMetrics$;
+        })
+      )
+      .subscribe((metrics) => {
         this.allMetrics.set(metrics);
         this.loadComparisons(metrics);
       });
-    });
   }
 
   private loadComparisons(metrics: MetricSeries[]): void {
-    const comparisons: UserComparison[] = [];
     const age = this.userAge();
 
     // Only proceed if we have a valid age
@@ -65,22 +71,31 @@ export class AnalysisComponent implements OnInit {
       return;
     }
 
-    metrics.forEach((metric) => {
-      if (metric.data.length > 0) {
+    // Collect all comparison observables
+    const comparisonObservables = metrics
+      .filter((metric) => metric.data.length > 0)
+      .map((metric) => {
         const latestValue = metric.data[metric.data.length - 1].value;
-        
-        this.benchmarkService
-          .compareUserToAgeGroup(metric.measurementType, latestValue, age)
-          .subscribe((comparison) => {
-            if (comparison) {
-              comparisons.push(comparison);
-            }
-          });
-      }
-    });
+        return this.benchmarkService.compareUserToAgeGroup(
+          metric.measurementType,
+          latestValue,
+          age
+        );
+      });
 
-    this.comparisons.set(comparisons);
-    this.loading.set(false);
+    // If no metrics to compare, set loading to false
+    if (comparisonObservables.length === 0) {
+      this.comparisons.set([]);
+      this.loading.set(false);
+      return;
+    }
+
+    // Wait for all comparisons to complete before updating state
+    forkJoin(comparisonObservables).subscribe((results) => {
+      const comparisons = results.filter((c) => c !== null) as UserComparison[];
+      this.comparisons.set(comparisons);
+      this.loading.set(false);
+    });
   }
 
   getRatingColor(rating: string): string {
