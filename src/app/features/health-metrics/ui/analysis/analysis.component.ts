@@ -1,6 +1,8 @@
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { forkJoin, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import { BenchmarkService } from '../../../../core/services/benchmark.service';
@@ -51,25 +53,29 @@ export class AnalysisComponent implements OnInit {
   }
 
   private loadComparisons(metrics: MetricSeries[]): void {
-    const comparisons: UserComparison[] = [];
-
-    metrics.forEach((metric) => {
-      if (metric.data.length > 0) {
+    const comparisonObservables = metrics
+      .filter((metric) => metric.data.length > 0)
+      .map((metric) => {
         const latestValue = metric.data[metric.data.length - 1].value;
-        
-        this.benchmarkService
+        return this.benchmarkService
           .compareUserToAgeGroup(metric.measurementType, latestValue, this.userAge)
-          .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe((comparison) => {
-            if (comparison) {
-              comparisons.push(comparison);
-            }
-          });
-      }
-    });
+          .pipe(
+            map((comparison) => (comparison ? comparison : null))
+          );
+      });
 
-    this.comparisons.set(comparisons);
-    this.loading.set(false);
+    if (comparisonObservables.length === 0) {
+      this.comparisons.set([]);
+      this.loading.set(false);
+      return;
+    }
+
+    forkJoin(comparisonObservables)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((comparisons) => {
+        this.comparisons.set(comparisons.filter((c) => c !== null) as UserComparison[]);
+        this.loading.set(false);
+      });
   }
 
   getRatingColor(rating: string): string {
