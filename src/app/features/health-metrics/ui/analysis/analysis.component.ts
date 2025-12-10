@@ -1,7 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType, ChartDataset } from 'chart.js';
 import { BenchmarkService } from '../../../../core/services/benchmark.service';
@@ -21,9 +21,10 @@ import { getSegmentValue, calculateCenteredYAxis } from './chart-utils';
   templateUrl: './analysis.component.html',
   styleUrl: './analysis.component.css',
 })
-export class AnalysisComponent implements OnInit {
+export class AnalysisComponent implements OnInit, OnDestroy {
   private readonly benchmarkService = inject(BenchmarkService);
   private readonly metricsState = inject(HealthMetricsStateService);
+  private readonly destroy$ = new Subject<void>();
 
   userAge = 28;
   comparisons = signal<UserComparison[]>([]);
@@ -40,10 +41,15 @@ export class AnalysisComponent implements OnInit {
     );
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   ngOnInit(): void {
     this.metricsState.loadAllMetrics();
     this.metricsState.allMetrics$
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntil(this.destroy$))
       .subscribe((metrics) => {
         this.allMetrics.set(metrics);
         this.loadComparisons(metrics);
@@ -74,7 +80,8 @@ export class AnalysisComponent implements OnInit {
         this.comparisons.set(validComparisons);
         this.loading.set(false);
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error loading comparisons:', err);
         this.comparisons.set([]);
         this.loading.set(false);
       },
