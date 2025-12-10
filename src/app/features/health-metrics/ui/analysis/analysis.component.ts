@@ -1,5 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { forkJoin } from 'rxjs';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import { forkJoin } from 'rxjs';
@@ -41,10 +43,12 @@ export class AnalysisComponent implements OnInit {
 
   ngOnInit(): void {
     this.metricsState.loadAllMetrics();
-    this.metricsState.allMetrics$.subscribe((metrics) => {
-      this.allMetrics.set(metrics);
-      this.loadComparisons(metrics);
-    });
+    this.metricsState.allMetrics$
+      .pipe(takeUntilDestroyed())
+      .subscribe((metrics) => {
+        this.allMetrics.set(metrics);
+        this.loadComparisons(metrics);
+      });
   }
 
   private loadComparisons(metrics: MetricSeries[]): void {
