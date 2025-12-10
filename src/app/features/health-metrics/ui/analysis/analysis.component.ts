@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin } from 'rxjs';
 import { BaseChartDirective } from 'ng2-charts';
-import { ChartConfiguration, ChartType } from 'chart.js';
-import { forkJoin } from 'rxjs';
+import { ChartConfiguration, ChartType, ChartDataset } from 'chart.js';
 import { BenchmarkService } from '../../../../core/services/benchmark.service';
 import { HealthMetricsStateService } from '../../data/health-metrics-state.service';
 import { UserComparison } from '../../../../core/models/benchmark.models';
@@ -110,7 +109,7 @@ export class AnalysisComponent implements OnInit {
     return getSegmentValue(comparison, position);
   }
 
-  getChartData(metricType: MeasurementType): ChartConfiguration['data'] {
+  getChartData(metricType: MeasurementType): ChartConfiguration<'line'>['data'] {
     const metric = this.allMetrics().find(m => m.measurementType === metricType);
     if (!metric || metric.data.length === 0) return { datasets: [] };
 
@@ -133,7 +132,7 @@ export class AnalysisComponent implements OnInit {
           createZoneDataset('Average Range', dates, percentiles.p75, 'rgba(245, 158, 11, 0.15)', '-1', 4),
           createZoneDataset('Below Average', dates, percentiles.p90, 'rgba(239, 68, 68, 0.15)', '-1', 3),
           createZoneDataset('Needs Improvement', dates, percentiles.p90 + 10, 'rgba(220, 38, 38, 0.15)', '-1', 2),
-        ],
+        ] as any,
       };
     } else {
       return {
@@ -147,7 +146,7 @@ export class AnalysisComponent implements OnInit {
           createZoneDataset('Good Range', dates, percentiles.p75, 'rgba(59, 130, 246, 0.15)', '-1', 4),
           createZoneDataset('Excellent Range', dates, percentiles.p90, 'rgba(16, 185, 129, 0.15)', '-1', 3),
           createZoneDataset('Outstanding', dates, percentiles.p90 + 10, 'rgba(16, 185, 129, 0.2)', '-1', 2),
-        ],
+        ] as any,
       };
     }
   }
