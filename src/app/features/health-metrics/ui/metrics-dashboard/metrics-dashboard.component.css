@@ -92,7 +92,7 @@
   background: var(--metric-color, var(--primary));
   color: white;
   border-color: var(--metric-color, var(--primary));
-  box-shadow: 0 0 20px var(--metric-color, var(--primary))60;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
 }
 
 .chart-wrapper {
