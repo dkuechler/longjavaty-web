@@ -1,5 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import { BenchmarkService } from '../../../../core/services/benchmark.service';
@@ -22,6 +23,7 @@ import { getSegmentValue, calculateCenteredYAxis } from './chart-utils';
 export class AnalysisComponent implements OnInit {
   private readonly benchmarkService = inject(BenchmarkService);
   private readonly metricsState = inject(HealthMetricsStateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   userAge = 28;
   comparisons = signal<UserComparison[]>([]);
@@ -40,10 +42,12 @@ export class AnalysisComponent implements OnInit {
 
   ngOnInit(): void {
     this.metricsState.loadAllMetrics();
-    this.metricsState.allMetrics$.subscribe((metrics) => {
-      this.allMetrics.set(metrics);
-      this.loadComparisons(metrics);
-    });
+    this.metricsState.allMetrics$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((metrics) => {
+        this.allMetrics.set(metrics);
+        this.loadComparisons(metrics);
+      });
   }
 
   private loadComparisons(metrics: MetricSeries[]): void {
@@ -55,6 +59,7 @@ export class AnalysisComponent implements OnInit {
         
         this.benchmarkService
           .compareUserToAgeGroup(metric.measurementType, latestValue, this.userAge)
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe((comparison) => {
             if (comparison) {
               comparisons.push(comparison);
