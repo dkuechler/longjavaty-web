@@ -33,7 +33,9 @@ export function highlightDataset(datasets: DashboardChartDataset[], targetMetric
     borderColor:
       dataset.metricType === targetMetricType
         ? dataset.borderColor
-        : dataset.borderColor + '40',
+        : typeof dataset.borderColor === 'string'
+        ? dataset.borderColor + '40'
+        : dataset.borderColor,
   }));
 }
 
