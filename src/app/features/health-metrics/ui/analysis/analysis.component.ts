@@ -1,7 +1,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { forkJoin } from 'rxjs';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
+import { forkJoin } from 'rxjs';
 import { BenchmarkService } from '../../../../core/services/benchmark.service';
 import { HealthMetricsStateService } from '../../data/health-metrics-state.service';
 import { UserComparison } from '../../../../core/models/benchmark.models';
@@ -40,31 +43,43 @@ export class AnalysisComponent implements OnInit {
 
   ngOnInit(): void {
     this.metricsState.loadAllMetrics();
-    this.metricsState.allMetrics$.subscribe((metrics) => {
-      this.allMetrics.set(metrics);
-      this.loadComparisons(metrics);
-    });
+    this.metricsState.allMetrics$
+      .pipe(takeUntilDestroyed())
+      .subscribe((metrics) => {
+        this.allMetrics.set(metrics);
+        this.loadComparisons(metrics);
+      });
   }
 
   private loadComparisons(metrics: MetricSeries[]): void {
-    const comparisons: UserComparison[] = [];
-
-    metrics.forEach((metric) => {
-      if (metric.data.length > 0) {
+    const comparisonObservables = metrics
+      .filter((metric) => metric.data.length > 0)
+      .map((metric) => {
         const latestValue = metric.data[metric.data.length - 1].value;
-        
-        this.benchmarkService
-          .compareUserToAgeGroup(metric.measurementType, latestValue, this.userAge)
-          .subscribe((comparison) => {
-            if (comparison) {
-              comparisons.push(comparison);
-            }
-          });
-      }
-    });
+        return this.benchmarkService.compareUserToAgeGroup(
+          metric.measurementType,
+          latestValue,
+          this.userAge
+        );
+      });
 
-    this.comparisons.set(comparisons);
-    this.loading.set(false);
+    if (comparisonObservables.length === 0) {
+      this.comparisons.set([]);
+      this.loading.set(false);
+      return;
+    }
+
+    forkJoin(comparisonObservables).subscribe({
+      next: (comparisons) => {
+        const validComparisons = comparisons.filter((c) => c !== null) as UserComparison[];
+        this.comparisons.set(validComparisons);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.comparisons.set([]);
+        this.loading.set(false);
+      },
+    });
   }
 
   getRatingColor(rating: string): string {
