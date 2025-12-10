@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
@@ -27,6 +27,7 @@ export class AnalysisComponent implements OnInit {
   private readonly benchmarkService = inject(BenchmarkService);
   private readonly metricsState = inject(HealthMetricsStateService);
   private readonly userProfileService = inject(UserProfileService);
+  private readonly destroyRef = inject(DestroyRef);
 
   userAge = signal<number>(28); // Default to 28, will be updated if user data is available
   comparisons = signal<UserComparison[]>([]);
@@ -56,7 +57,7 @@ export class AnalysisComponent implements OnInit {
           this.metricsState.loadAllMetrics();
           return this.metricsState.allMetrics$;
         }),
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
         catchError((error) => {
           console.error('Error loading user age or metrics', error);
           this.loading.set(false);

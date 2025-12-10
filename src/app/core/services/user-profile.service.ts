@@ -4,6 +4,9 @@ import { map, catchError } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
 import { UserProfile } from '../models/user.models';
 
+const MIN_AGE = 0;
+const MAX_AGE = 150;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -28,13 +31,16 @@ export class UserProfileService {
 
         // Calculate age from birthdate if available
         if (keycloakProfile.attributes?.['birthdate']) {
-          const birthdate = Array.isArray(keycloakProfile.attributes['birthdate'])
-            ? keycloakProfile.attributes['birthdate'][0]
-            : keycloakProfile.attributes['birthdate'];
-          userProfile.birthDate = birthdate;
-          const calculatedAge = this.calculateAge(birthdate);
-          if (calculatedAge !== null) {
-            userProfile.age = calculatedAge;
+          const birthdateAttr = keycloakProfile.attributes['birthdate'];
+          // Handle both array and string formats; take first value if array
+          const birthdate = Array.isArray(birthdateAttr) ? birthdateAttr[0] : birthdateAttr;
+          
+          if (birthdate) {
+            userProfile.birthDate = birthdate;
+            const calculatedAge = this.calculateAge(birthdate);
+            if (calculatedAge !== null) {
+              userProfile.age = calculatedAge;
+            }
           }
         }
 
@@ -81,8 +87,8 @@ export class UserProfileService {
       age--;
     }
 
-    // Additional validation: age should be reasonable (0-150)
-    if (age < 0 || age > 150) {
+    // Additional validation: age should be reasonable
+    if (age < MIN_AGE || age > MAX_AGE) {
       console.warn('Calculated age is out of reasonable range:', age);
       return null;
     }
