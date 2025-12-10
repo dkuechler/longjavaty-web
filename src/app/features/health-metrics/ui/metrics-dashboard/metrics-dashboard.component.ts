@@ -1,13 +1,14 @@
 import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
-import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
+import { Chart, ChartConfiguration, ChartData, ChartType, registerables } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import { Observable } from 'rxjs';
 import { HealthMetricsStateService } from '../../data/health-metrics-state.service';
 import { MetricSeries, MeasurementType } from '../../../../core/models/measurement.models';
 import { createDashboardChartOptions } from './dashboard-chart-config';
-import { createChartDatasets, highlightDataset, resetDatasetHighlight, ChartDataset } from './dashboard-chart-utils';
+import { createChartDatasets, highlightDataset, resetDatasetHighlight, MetricChartDataset } from './dashboard-chart-utils';
 
 Chart.register(...registerables);
 
@@ -33,12 +34,16 @@ export class MetricsDashboardComponent implements OnInit {
     });
   });
 
-  lineChartData = signal<ChartConfiguration['data']>({ datasets: [] });
+  lineChartData = signal<ChartData<'line', { x: number; y: number }[]>>({ datasets: [] });
   lineChartOptions = signal<ChartConfiguration['options']>(createDashboardChartOptions());
   lineChartType: ChartType = 'line';
 
   constructor() {
     this.allMetrics$ = this.metricsState.allMetrics$;
+
+    this.allMetrics$.pipe(takeUntilDestroyed()).subscribe((metrics) => {
+      this.allMetricsData.set(metrics);
+    });
 
     effect(() => {
       const filtered = this.filteredMetrics();
@@ -48,9 +53,6 @@ export class MetricsDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.metricsState.loadAllMetrics();
-    this.allMetrics$.subscribe((metrics) => {
-      this.allMetricsData.set(metrics);
-    });
   }
 
   private updateChartData(metrics: MetricSeries[]): void {
@@ -61,14 +63,14 @@ export class MetricsDashboardComponent implements OnInit {
   onMetricHover(metricType: MeasurementType): void {
     this.hoveredMetric.set(metricType);
     const currentData = this.lineChartData();
-    const datasets = highlightDataset(currentData.datasets as ChartDataset[], metricType);
+    const datasets = highlightDataset(currentData.datasets as MetricChartDataset[], metricType);
     this.lineChartData.set({ datasets });
   }
 
   onMetricLeave(): void {
     this.hoveredMetric.set(null);
     const currentData = this.lineChartData();
-    const datasets = resetDatasetHighlight(currentData.datasets as ChartDataset[]);
+    const datasets = resetDatasetHighlight(currentData.datasets as MetricChartDataset[]);
     this.lineChartData.set({ datasets });
   }
 

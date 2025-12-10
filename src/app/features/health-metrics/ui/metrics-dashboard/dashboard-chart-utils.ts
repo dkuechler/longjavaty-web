@@ -1,23 +1,12 @@
+import { ChartDataset } from 'chart.js';
 import { MetricSeries, MeasurementType } from '../../../../core/models/measurement.models';
+import { DashboardChartDataset } from './dashboard-chart.types';
 
-export interface ChartDataset {
-  label: string;
-  data: { x: number; y: number }[];
-  borderColor: string;
-  backgroundColor: string;
-  borderWidth: number;
-  pointRadius: number;
-  pointHoverRadius: number;
-  pointBackgroundColor: string;
-  pointBorderColor: string;
-  pointBorderWidth: number;
-  tension: number;
-  fill: boolean;
+export interface MetricChartDataset extends ChartDataset<'line', { x: number; y: number }[]> {
   metricType: MeasurementType;
-  yAxisID: string;
 }
 
-export function createChartDatasets(metrics: MetricSeries[]): ChartDataset[] {
+export function createChartDatasets(metrics: MetricSeries[]): MetricChartDataset[] {
   return metrics
     .filter((metric) => metric.data.length > 0)
     .map((metric) => ({
@@ -41,7 +30,7 @@ export function createChartDatasets(metrics: MetricSeries[]): ChartDataset[] {
     }));
 }
 
-export function highlightDataset(datasets: ChartDataset[], targetMetricType: MeasurementType): ChartDataset[] {
+export function highlightDataset(datasets: MetricChartDataset[], targetMetricType: MeasurementType): MetricChartDataset[] {
   return datasets.map((dataset) => ({
     ...dataset,
     borderWidth: dataset.metricType === targetMetricType ? 4 : 1.5,
@@ -49,15 +38,19 @@ export function highlightDataset(datasets: ChartDataset[], targetMetricType: Mea
     borderColor:
       dataset.metricType === targetMetricType
         ? dataset.borderColor
-        : dataset.borderColor + '40',
+        : typeof dataset.borderColor === 'string'
+        ? dataset.borderColor + '40'
+        : dataset.borderColor,
   }));
 }
 
-export function resetDatasetHighlight(datasets: ChartDataset[]): ChartDataset[] {
+export function resetDatasetHighlight(datasets: MetricChartDataset[]): MetricChartDataset[] {
   return datasets.map((dataset) => ({
     ...dataset,
     borderWidth: 2.5,
     pointRadius: 3,
-    borderColor: dataset.borderColor.replace(/40$/, ''),
+    borderColor: typeof dataset.borderColor === 'string' 
+      ? dataset.borderColor.replace(/40$/, '') 
+      : dataset.borderColor,
   }));
 }
