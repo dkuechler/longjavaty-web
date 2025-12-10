@@ -1,7 +1,52 @@
+import { ChartDataset } from 'chart.js';
 import { MetricSeries } from '../../../../core/models/measurement.models';
 import { CHART_COLORS, ZONE_DATASET_INDICES } from './chart-config';
 
-export function createUserDataset(metric: MetricSeries): any {
+interface ChartDataPoint {
+  x: Date;
+  y: number;
+}
+
+interface UserDatasetConfig extends ChartDataset<'line', ChartDataPoint[]> {
+  label: string;
+  data: ChartDataPoint[];
+  borderColor: string;
+  backgroundColor: string;
+  borderWidth: number;
+  tension: number;
+  fill: boolean;
+  pointRadius: number;
+  pointHoverRadius: number;
+  pointBackgroundColor: string;
+  pointBorderColor: string;
+  pointBorderWidth: number;
+  order: number;
+}
+
+interface AverageDatasetConfig extends ChartDataset<'line', ChartDataPoint[]> {
+  label: string;
+  data: ChartDataPoint[];
+  borderColor: string;
+  backgroundColor: string;
+  borderWidth: number;
+  borderDash: number[];
+  tension: number;
+  fill: boolean;
+  pointRadius: number;
+  order: number;
+}
+
+interface ZoneDatasetConfig extends ChartDataset<'line', ChartDataPoint[]> {
+  label: string;
+  data: ChartDataPoint[];
+  borderColor: string;
+  backgroundColor: string;
+  fill: string | number;
+  pointRadius: number;
+  order: number;
+}
+
+export function createUserDataset(metric: MetricSeries): UserDatasetConfig {
   return {
     label: 'Your Value',
     data: metric.data.map(d => ({ x: d.timestamp, y: d.value })),
@@ -19,7 +64,7 @@ export function createUserDataset(metric: MetricSeries): any {
   };
 }
 
-export function createAverageDataset(dates: Date[], average: number): any {
+export function createAverageDataset(dates: Date[], average: number): AverageDatasetConfig {
   return {
     label: 'Average',
     data: dates.map(d => ({ x: d, y: average })),
@@ -41,7 +86,7 @@ export function createZoneDataset(
   color: string,
   fill: string | number,
   order: number
-): any {
+): ZoneDatasetConfig {
   return {
     label,
     data: dates.map(d => ({ x: d, y: value })),
