@@ -21,6 +21,7 @@ export function createChartDatasets(metrics: MetricSeries[]): any[] {
       fill: false,
       metricType: metric.measurementType,
       yAxisID: metric.measurementType === MeasurementType.STEPS ? 'y1' : 'y',
+      originalBorderColor: metric.color,
     }));
 }
 
@@ -31,8 +32,8 @@ export function highlightDataset(datasets: any[], targetMetricType: MeasurementT
     pointRadius: dataset.metricType === targetMetricType ? 4 : 2,
     borderColor:
       dataset.metricType === targetMetricType
-        ? dataset.borderColor
-        : dataset.borderColor + '40',
+        ? dataset.originalBorderColor || dataset.borderColor
+        : (dataset.originalBorderColor || dataset.borderColor) + '40',
   }));
 }
 
@@ -41,6 +42,6 @@ export function resetDatasetHighlight(datasets: any[]): any[] {
     ...dataset,
     borderWidth: 2.5,
     pointRadius: 3,
-    borderColor: dataset.borderColor.replace(/40$/, ''),
+    borderColor: dataset.originalBorderColor || dataset.borderColor,
   }));
 }
