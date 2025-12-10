@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { MeasurementResponse, MeasurementType } from '../models/measurement.models';
+import { MOCK_CONFIG } from '@env/mock-config';
 
 @Injectable({
   providedIn: 'root',
@@ -53,12 +54,12 @@ export class MockHealthDataService {
 
     return {
       id,
-      userId: 'dev-user-123',
+      userId: MOCK_CONFIG.userId,
       measurementType,
       value,
       unit: baseConfig.unit,
       recordedAt: date.toISOString(),
-      sourceId: 'mock-device',
+      sourceId: MOCK_CONFIG.deviceId,
       createdAt: date.toISOString(),
       updatedAt: date.toISOString(),
     };
