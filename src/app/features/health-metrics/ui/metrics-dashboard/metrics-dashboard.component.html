@@ -43,32 +43,35 @@
         <!-- Custom Legend -->
         <div class="metrics-legend">
           @for (metric of metrics; track metric.measurementType) {
-            @if (metric.data.length > 0) {
-              <div
-                class="legend-item"
-                [class.hovered]="isMetricHovered(metric.measurementType)"
-                (mouseenter)="onMetricHover(metric.measurementType)"
-                (mouseleave)="onMetricLeave()"
-              >
-                <div class="legend-color" [style.background-color]="metric.color"></div>
-                <div class="legend-content">
-                  <span class="legend-label">{{ metric.label }}</span>
-                  <span class="legend-value">
-                    {{ metric.data[metric.data.length - 1].value }}
-                    {{ metric.data[metric.data.length - 1].unit }}
-                  </span>
+            @if (metric.data && metric.data.length > 0) {
+              @let lastDataPoint = metric.data[metric.data.length - 1];
+              @if (lastDataPoint) {
+                <div
+                  class="legend-item"
+                  [class.hovered]="isMetricHovered(metric.measurementType)"
+                  (mouseenter)="onMetricHover(metric.measurementType)"
+                  (mouseleave)="onMetricLeave()"
+                >
+                  <div class="legend-color" [style.background-color]="metric.color"></div>
+                  <div class="legend-content">
+                    <span class="legend-label">{{ metric.label }}</span>
+                    <span class="legend-value">
+                      {{ lastDataPoint.value }}
+                      {{ lastDataPoint.unit }}
+                    </span>
+                  </div>
+                  <div class="legend-indicator">
+                    <svg width="16" height="16" viewBox="0 0 16 16">
+                      <path
+                        d="M2 8 L8 2 L14 8"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        fill="none"
+                      />
+                    </svg>
+                  </div>
                 </div>
-                <div class="legend-indicator">
-                  <svg width="16" height="16" viewBox="0 0 16 16">
-                    <path
-                      d="M2 8 L8 2 L14 8"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      fill="none"
-                    />
-                  </svg>
-                </div>
-              </div>
+              }
             }
           }
         </div>
