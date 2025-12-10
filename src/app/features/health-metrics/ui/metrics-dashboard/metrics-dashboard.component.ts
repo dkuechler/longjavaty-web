@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
@@ -48,7 +49,7 @@ export class MetricsDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.metricsState.loadAllMetrics();
-    this.allMetrics$.subscribe((metrics) => {
+    this.allMetrics$.pipe(takeUntilDestroyed()).subscribe((metrics) => {
       this.allMetricsData.set(metrics);
     });
   }
