@@ -1,5 +1,6 @@
 import { ChartDataset } from 'chart.js';
 import { MetricSeries, MeasurementType } from '../../../../core/models/measurement.models';
+import { DashboardChartDataset } from './dashboard-chart.types';
 
 export interface MetricChartDataset extends ChartDataset<'line', { x: number; y: number }[]> {
   metricType: MeasurementType;
@@ -37,7 +38,9 @@ export function highlightDataset(datasets: MetricChartDataset[], targetMetricTyp
     borderColor:
       dataset.metricType === targetMetricType
         ? dataset.borderColor
-        : dataset.borderColor + '40',
+        : typeof dataset.borderColor === 'string'
+        ? dataset.borderColor + '40'
+        : dataset.borderColor,
   }));
 }
 
