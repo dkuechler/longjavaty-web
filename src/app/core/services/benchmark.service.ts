@@ -39,7 +39,7 @@ export class BenchmarkService {
     const ageGroup = benchmark.ageGroups.find((ag) => age >= ag.ageMin && age <= ag.ageMax);
     if (!ageGroup) return of(null);
 
-    const percentile = this.calculatePercentile(userValue, ageGroup);
+    const percentile = this.calculatePercentile(userValue, ageGroup, metricType);
     const difference = userValue - ageGroup.average;
     const differencePercentage = (difference / ageGroup.average) * 100;
     const rating = this.getRating(percentile, metricType);
@@ -57,35 +57,41 @@ export class BenchmarkService {
     });
   }
 
-  private calculatePercentile(value: number, ageGroup: AgeGroupBenchmark): number {
+  private calculatePercentile(value: number, ageGroup: AgeGroupBenchmark, metricType: MeasurementType): number {
     const { p10, p25, p50, p75, p90 } = ageGroup.percentiles;
+    const isLowerBetter = metricType === MeasurementType.RESTING_HEART_RATE;
 
-    if (value <= p10) return 10;
-    if (value <= p25) return 10 + ((value - p10) / (p25 - p10)) * 15;
-    if (value <= p50) return 25 + ((value - p25) / (p50 - p25)) * 25;
-    if (value <= p75) return 50 + ((value - p50) / (p75 - p50)) * 25;
-    if (value <= p90) return 75 + ((value - p75) / (p90 - p75)) * 15;
-    return 90 + Math.min(((value - p90) / p90) * 10, 10);
+    // Calculate raw percentile (assumes higher values = higher percentiles)
+    let rawPercentile: number;
+    if (value <= p10) {
+      rawPercentile = 10;
+    } else if (value <= p25) {
+      rawPercentile = 10 + ((value - p10) / (p25 - p10)) * 15;
+    } else if (value <= p50) {
+      rawPercentile = 25 + ((value - p25) / (p50 - p25)) * 25;
+    } else if (value <= p75) {
+      rawPercentile = 50 + ((value - p50) / (p75 - p50)) * 25;
+    } else if (value <= p90) {
+      rawPercentile = 75 + ((value - p75) / (p90 - p75)) * 15;
+    } else {
+      rawPercentile = 90 + Math.min(((value - p90) / p90) * 10, 10);
+    }
+
+    // For "lower is better" metrics, invert the percentile
+    // E.g., a heart rate of 52 (p10) should be 90th percentile (top 10%)
+    return isLowerBetter ? 100 - rawPercentile : rawPercentile;
   }
 
   private getRating(
     percentile: number,
     metricType: MeasurementType
   ): 'excellent' | 'good' | 'average' | 'below-average' | 'poor' {
-    const isLowerBetter = metricType === MeasurementType.RESTING_HEART_RATE;
-
-    if (isLowerBetter) {
-      if (percentile <= 25) return 'excellent';
-      if (percentile <= 40) return 'good';
-      if (percentile <= 60) return 'average';
-      if (percentile <= 75) return 'below-average';
-      return 'poor';
-    } else {
-      if (percentile >= 75) return 'excellent';
-      if (percentile >= 60) return 'good';
-      if (percentile >= 40) return 'average';
-      if (percentile >= 25) return 'below-average';
-      return 'poor';
-    }
+    // Percentile is already inverted for "lower is better" metrics in calculatePercentile
+    // So we can use the same rating logic for all metrics
+    if (percentile >= 75) return 'excellent';
+    if (percentile >= 60) return 'good';
+    if (percentile >= 40) return 'average';
+    if (percentile >= 25) return 'below-average';
+    return 'poor';
   }
 }
