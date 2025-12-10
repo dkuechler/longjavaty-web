@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin } from 'rxjs';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
+import { forkJoin } from 'rxjs';
 import { BenchmarkService } from '../../../../core/services/benchmark.service';
 import { HealthMetricsStateService } from '../../data/health-metrics-state.service';
 import { UserComparison } from '../../../../core/models/benchmark.models';
@@ -68,19 +69,17 @@ export class AnalysisComponent implements OnInit {
       return;
     }
 
-    forkJoin(comparisonObservables)
-      .pipe(takeUntilDestroyed())
-      .subscribe({
-        next: (comparisons) => {
-          const validComparisons = comparisons.filter((c): c is UserComparison => c !== null);
-          this.comparisons.set(validComparisons);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.comparisons.set([]);
-          this.loading.set(false);
-        },
-      });
+    forkJoin(comparisonObservables).subscribe({
+      next: (comparisons) => {
+        const validComparisons = comparisons.filter((c) => c !== null) as UserComparison[];
+        this.comparisons.set(validComparisons);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.comparisons.set([]);
+        this.loading.set(false);
+      },
+    });
   }
 
   getRatingColor(rating: string): string {
