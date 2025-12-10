@@ -1,6 +1,11 @@
+import { ChartDataset } from 'chart.js';
 import { MetricSeries, MeasurementType } from '../../../../core/models/measurement.models';
 
-export function createChartDatasets(metrics: MetricSeries[]): any[] {
+export interface MetricChartDataset extends ChartDataset<'line', { x: number; y: number }[]> {
+  metricType: MeasurementType;
+}
+
+export function createChartDatasets(metrics: MetricSeries[]): MetricChartDataset[] {
   return metrics
     .filter((metric) => metric.data.length > 0)
     .map((metric) => ({
@@ -24,7 +29,7 @@ export function createChartDatasets(metrics: MetricSeries[]): any[] {
     }));
 }
 
-export function highlightDataset(datasets: any[], targetMetricType: MeasurementType): any[] {
+export function highlightDataset(datasets: MetricChartDataset[], targetMetricType: MeasurementType): MetricChartDataset[] {
   return datasets.map((dataset) => ({
     ...dataset,
     borderWidth: dataset.metricType === targetMetricType ? 4 : 1.5,
@@ -36,11 +41,13 @@ export function highlightDataset(datasets: any[], targetMetricType: MeasurementT
   }));
 }
 
-export function resetDatasetHighlight(datasets: any[]): any[] {
+export function resetDatasetHighlight(datasets: MetricChartDataset[]): MetricChartDataset[] {
   return datasets.map((dataset) => ({
     ...dataset,
     borderWidth: 2.5,
     pointRadius: 3,
-    borderColor: dataset.borderColor.replace(/40$/, ''),
+    borderColor: typeof dataset.borderColor === 'string' 
+      ? dataset.borderColor.replace(/40$/, '') 
+      : dataset.borderColor,
   }));
 }
