@@ -55,11 +55,19 @@ export class AnalysisComponent implements OnInit {
         
         this.benchmarkService
           .compareUserToAgeGroup(metric.measurementType, latestValue, this.userAge)
-          .subscribe((comparison) => {
-            if (comparison) {
-              comparisons.push(comparison);
+          .subscribe(
+            (comparison) => {
+              if (comparison) {
+                comparisons.push(comparison);
+              }
+            },
+            (error) => {
+              console.error('Error comparing user to age group:', error);
+              // Optionally, set loading to false or show an error message to the user
+              this.loading.set(false);
+              // You could also set an error signal or display a message in the UI
             }
-          });
+          );
       }
     });
 
