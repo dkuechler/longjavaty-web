@@ -47,7 +47,7 @@ export class MockHealthDataService {
       case MeasurementType.VO2_MAX:
         // 8 ml/kg/min increase is achievable with structured cardio training
         // Studies indicate 5-15% improvement (or 2-8 ml/kg/min) is typical for sedentary individuals
-        // starting a training program over 8-12 weeks. Starting at 38 (below average) to 46 (good)
+        // Starting a training program over 8-12 weeks. Starting at 38 (below average) to 46 (good)
         improvement = 8 * progressFactor;
         break;
       case MeasurementType.STEPS:
