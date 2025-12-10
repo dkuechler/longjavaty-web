@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 import { HealthMetricsStateService } from '../../data/health-metrics-state.service';
 import { MetricSeries, MeasurementType } from '../../../../core/models/measurement.models';
 import { createDashboardChartOptions } from './dashboard-chart-config';
-import { createChartDatasets, highlightDataset, resetDatasetHighlight } from './dashboard-chart-utils';
+import { createChartDatasets, highlightDataset, resetDatasetHighlight, ChartDataset } from './dashboard-chart-utils';
 
 Chart.register(...registerables);
 
@@ -61,14 +61,14 @@ export class MetricsDashboardComponent implements OnInit {
   onMetricHover(metricType: MeasurementType): void {
     this.hoveredMetric.set(metricType);
     const currentData = this.lineChartData();
-    const datasets = highlightDataset(currentData.datasets as any[], metricType);
+    const datasets = highlightDataset(currentData.datasets as ChartDataset[], metricType);
     this.lineChartData.set({ datasets });
   }
 
   onMetricLeave(): void {
     this.hoveredMetric.set(null);
     const currentData = this.lineChartData();
-    const datasets = resetDatasetHighlight(currentData.datasets as any[]);
+    const datasets = resetDatasetHighlight(currentData.datasets as ChartDataset[]);
     this.lineChartData.set({ datasets });
   }
 

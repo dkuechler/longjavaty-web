@@ -1,6 +1,23 @@
 import { MetricSeries, MeasurementType } from '../../../../core/models/measurement.models';
 
-export function createChartDatasets(metrics: MetricSeries[]): any[] {
+export interface ChartDataset {
+  label: string;
+  data: { x: number; y: number }[];
+  borderColor: string;
+  backgroundColor: string;
+  borderWidth: number;
+  pointRadius: number;
+  pointHoverRadius: number;
+  pointBackgroundColor: string;
+  pointBorderColor: string;
+  pointBorderWidth: number;
+  tension: number;
+  fill: boolean;
+  metricType: MeasurementType;
+  yAxisID: string;
+}
+
+export function createChartDatasets(metrics: MetricSeries[]): ChartDataset[] {
   return metrics
     .filter((metric) => metric.data.length > 0)
     .map((metric) => ({
@@ -24,7 +41,7 @@ export function createChartDatasets(metrics: MetricSeries[]): any[] {
     }));
 }
 
-export function highlightDataset(datasets: any[], targetMetricType: MeasurementType): any[] {
+export function highlightDataset(datasets: ChartDataset[], targetMetricType: MeasurementType): ChartDataset[] {
   return datasets.map((dataset) => ({
     ...dataset,
     borderWidth: dataset.metricType === targetMetricType ? 4 : 1.5,
@@ -36,7 +53,7 @@ export function highlightDataset(datasets: any[], targetMetricType: MeasurementT
   }));
 }
 
-export function resetDatasetHighlight(datasets: any[]): any[] {
+export function resetDatasetHighlight(datasets: ChartDataset[]): ChartDataset[] {
   return datasets.map((dataset) => ({
     ...dataset,
     borderWidth: 2.5,
