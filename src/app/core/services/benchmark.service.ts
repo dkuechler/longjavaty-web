@@ -3,6 +3,7 @@ import { Observable, of } from 'rxjs';
 import { MeasurementType } from '../models/measurement.models';
 import { MetricBenchmark, AgeGroupBenchmark, UserComparison } from '../models/benchmark.models';
 import { BENCHMARK_DATA } from '../data/benchmark-data';
+import { isLowerBetter } from '../../features/health-metrics/ui/analysis/metric-config';
 
 @Injectable({
   providedIn: 'root',
@@ -57,17 +58,8 @@ export class BenchmarkService {
     });
   }
 
-  /**
-   * Determines if lower values are better for a given metric type.
-   * For example, resting heart rate is better when lower.
-   */
-  private isLowerBetterMetric(metricType: MeasurementType): boolean {
-    return metricType === MeasurementType.RESTING_HEART_RATE;
-  }
-
   private calculatePercentile(value: number, ageGroup: AgeGroupBenchmark, metricType: MeasurementType): number {
     const { p10, p25, p50, p75, p90 } = ageGroup.percentiles;
-    const isLowerBetter = this.isLowerBetterMetric(metricType);
 
     // Calculate raw percentile (assumes higher values = higher percentiles)
     let rawPercentile: number;
@@ -87,7 +79,7 @@ export class BenchmarkService {
 
     // For "lower is better" metrics, invert the percentile
     // E.g., a heart rate of 52 (p10) should be 90th percentile (top 10%)
-    return isLowerBetter ? 100 - rawPercentile : rawPercentile;
+    return isLowerBetter(metricType) ? 100 - rawPercentile : rawPercentile;
   }
 
   private getRating(
