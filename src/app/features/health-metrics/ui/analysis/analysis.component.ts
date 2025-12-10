@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin } from 'rxjs';
@@ -24,7 +24,6 @@ import { getSegmentValue, calculateCenteredYAxis } from './chart-utils';
 export class AnalysisComponent implements OnInit {
   private readonly benchmarkService = inject(BenchmarkService);
   private readonly metricsState = inject(HealthMetricsStateService);
-  private readonly destroyRef = inject(DestroyRef);
 
   userAge = 28;
   comparisons = signal<UserComparison[]>([]);
@@ -44,7 +43,7 @@ export class AnalysisComponent implements OnInit {
   ngOnInit(): void {
     this.metricsState.loadAllMetrics();
     this.metricsState.allMetrics$
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(takeUntilDestroyed())
       .subscribe((metrics) => {
         this.allMetrics.set(metrics);
         this.loadComparisons(metrics);
@@ -70,7 +69,7 @@ export class AnalysisComponent implements OnInit {
     }
 
     forkJoin(comparisonObservables)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(takeUntilDestroyed())
       .subscribe({
         next: (comparisons) => {
           const validComparisons = comparisons.filter((c): c is UserComparison => c !== null);
