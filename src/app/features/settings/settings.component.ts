@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
 import { KeycloakProfile } from 'keycloak-js';
 
@@ -36,7 +36,7 @@ export class SettingsComponent implements OnInit {
         this.profile.set(profile);
       }
     } catch (err) {
-      this.error.set('Unable to load your profile. Please try refreshing the page or contact support if the issue persists.');
+      this.error.set('Failed to load profile');
       console.error('Error loading profile:', err);
     } finally {
       this.loading.set(false);
@@ -68,7 +68,7 @@ export class SettingsComponent implements OnInit {
         this.authService.logout();
       }, 2000);
     } catch (err) {
-      this.error.set('Failed to delete data. Please try again. If this problem persists, please contact support for assistance with data deletion.');
+      this.error.set('Failed to delete data. Please try again.');
       console.error('Error deleting data:', err);
     } finally {
       this.deleting.set(false);
@@ -76,10 +76,6 @@ export class SettingsComponent implements OnInit {
   }
 
   openKeycloakAccount(): void {
-    // Open the Keycloak account page in a new tab
-    const accountUrl = this.authService.getKeycloakAccountUrl
-      ? this.authService.getKeycloakAccountUrl()
-      : 'https://auth.example.com/realms/your-realm/account';
-    window.open(accountUrl, '_blank');
+    this.authService.updateUserProfile();
   }
 }
