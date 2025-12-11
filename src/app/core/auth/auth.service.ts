@@ -75,7 +75,7 @@ export class AuthService {
       
       // For now, redirect to Keycloak account management
       const accountUrl = this.keycloak.getKeycloakInstance().createAccountUrl();
-      window.open(accountUrl, '_blank');
+      window.location.href = accountUrl;
     } catch (error) {
       console.error('Error updating user profile', error);
       throw error;
