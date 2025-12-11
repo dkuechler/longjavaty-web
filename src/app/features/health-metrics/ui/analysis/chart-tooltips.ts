@@ -1,5 +1,11 @@
 import { CHART_COLORS, ZONE_DATASET_INDICES } from './chart-config';
 
+/**
+ * Generate tooltip label text for chart data points.
+ * Formats differently for user data, average line, and zone boundaries.
+ * @param context - Chart.js tooltip context containing dataset and point information
+ * @returns Formatted label string for the tooltip
+ */
 export function getTooltipLabel(context: any): string {
   const label = context.dataset.label || '';
   const value = context.parsed.y;
@@ -22,6 +28,12 @@ export function getTooltipLabel(context: any): string {
   return `${label}: ${prevValue}-${value}`;
 }
 
+/**
+ * Determine tooltip border and background colors based on dataset type.
+ * Colors match the chart elements for visual consistency.
+ * @param context - Chart.js tooltip context containing dataset information
+ * @returns Object with borderColor and backgroundColor properties
+ */
 export function getTooltipColor(context: any): { borderColor: string; backgroundColor: string } {
   const { datasetIndex, chart } = context;
   const datasets = chart.data.datasets;

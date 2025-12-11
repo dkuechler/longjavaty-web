@@ -17,6 +17,13 @@ export const ZONE_DATASET_INDICES = {
   FIRST_ZONE: 2,
 } as const;
 
+/**
+ * Create base Chart.js configuration options with custom tooltip callbacks.
+ * Configures responsive behavior, interaction modes, and visual styling.
+ * @param tooltipLabelCallback - Function to format tooltip label text
+ * @param tooltipColorCallback - Function to determine tooltip color based on context
+ * @returns Chart.js configuration options object
+ */
 export function createBaseChartOptions(
   tooltipLabelCallback: (context: any) => string,
   tooltipColorCallback: (context: any) => { borderColor: string; backgroundColor: string }
