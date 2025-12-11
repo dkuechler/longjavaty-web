@@ -24,8 +24,9 @@ export class App {
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
     const userMenu = target.closest('.user-menu');
+    const avatarBtn = target.closest('.avatar-btn');
     
-    if (!userMenu && this.userMenuOpen()) {
+    if (!userMenu && !avatarBtn && this.userMenuOpen()) {
       this.closeUserMenu();
     }
   }
