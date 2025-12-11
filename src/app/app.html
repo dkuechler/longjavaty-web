@@ -50,13 +50,26 @@
       </div>
       <div class="topbar-right">
         <div class="user-menu">
-          <button class="avatar" (click)="toggleUserMenu()" type="button" aria-label="User menu" [attr.aria-expanded]="userMenuOpen()">
+          <button 
+            class="avatar" 
+            (click)="toggleUserMenu()" 
+            (keydown.enter)="toggleUserMenu()"
+            (keydown.space)="toggleUserMenu(); $event.preventDefault()"
+            type="button" 
+            aria-label="User menu" 
+            [attr.aria-expanded]="userMenuOpen()">
             <span>DK</span>
           </button>
           
           @if (userMenuOpen()) {
-            <div class="user-menu-dropdown">
-              <a routerLink="/settings" (click)="closeUserMenu()" class="menu-item">
+            <div class="user-menu-dropdown" role="menu" aria-label="User menu">
+              <a 
+                routerLink="/settings" 
+                (click)="closeUserMenu()" 
+                (keydown.escape)="closeUserMenu()"
+                class="menu-item"
+                role="menuitem"
+                tabindex="0">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="8" cy="8" r="3" />
                   <path d="M8 1v2m0 10v2M1 8h2m10 0h2m-2.93-5.07l-1.41 1.41M5.34 11.66l-1.41 1.41m9.14 0l-1.41-1.41M5.34 4.34L3.93 2.93" stroke-linecap="round" />
