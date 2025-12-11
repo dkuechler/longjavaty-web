@@ -65,6 +65,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Error loading metrics:', err);
+          this.allMetrics.set([]);
           this.loading.set(false);
         }
       });
