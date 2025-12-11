@@ -68,7 +68,7 @@ export class SettingsComponent implements OnInit {
         this.authService.logout();
       }, 2000);
     } catch (err) {
-      this.error.set('Failed to delete data. Please try again.');
+      this.error.set('Failed to delete data. Please try again. If this problem persists, please contact support for assistance with data deletion.');
       console.error('Error deleting data:', err);
     } finally {
       this.deleting.set(false);
