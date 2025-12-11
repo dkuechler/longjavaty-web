@@ -33,12 +33,12 @@
     </nav>
 
     <div class="sidebar-footer">
-      <a href="#" class="nav-item">
+      <a href="https://github.com/dkuechler/appleWatch-Zone2-pilot/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" class="nav-item">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <circle cx="10" cy="10" r="3" />
-          <path d="M10 2v2m0 12v2M2 10h2m12 0h2m-2.93-5.07l-1.41 1.41M7.34 13.66l-1.41 1.41m9.14 0l-1.41-1.41M7.34 6.34L5.93 4.93" stroke-linecap="round" />
+          <path d="M10 2a4 4 0 014 4v2h1a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2h1V6a4 4 0 014-4z" stroke-linecap="round" />
+          <circle cx="10" cy="13" r="1" />
         </svg>
-        <span>Settings</span>
+        <span>Privacy</span>
       </a>
     </div>
   </aside>
@@ -50,9 +50,21 @@
       </div>
       <div class="topbar-right">
         <div class="user-menu">
-          <div class="avatar">
+          <button class="avatar" (click)="toggleUserMenu()" type="button">
             <span>DK</span>
-          </div>
+          </button>
+          
+          @if (userMenuOpen()) {
+            <div class="user-menu-dropdown">
+              <a routerLink="/settings" (click)="closeUserMenu()" class="menu-item">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="8" cy="8" r="3" />
+                  <path d="M8 1v2m0 10v2M1 8h2m10 0h2m-2.93-5.07l-1.41 1.41M5.34 11.66l-1.41 1.41m9.14 0l-1.41-1.41M5.34 4.34L3.93 2.93" stroke-linecap="round" />
+                </svg>
+                Settings
+              </a>
+            </div>
+          }
         </div>
       </div>
     </header>
