@@ -76,6 +76,10 @@ export class SettingsComponent implements OnInit {
   }
 
   openKeycloakAccount(): void {
-    this.authService.updateUserProfile({});
+    // Open the Keycloak account page in a new tab
+    const accountUrl = this.authService.getKeycloakAccountUrl
+      ? this.authService.getKeycloakAccountUrl()
+      : 'https://auth.example.com/realms/your-realm/account';
+    window.open(accountUrl, '_blank');
   }
 }
