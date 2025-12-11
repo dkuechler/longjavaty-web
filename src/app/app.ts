@@ -30,4 +30,11 @@ export class App {
       this.closeUserMenu();
     }
   }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.userMenuOpen()) {
+      this.closeUserMenu();
+    }
+  }
 }
