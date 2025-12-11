@@ -64,17 +64,15 @@ export class AuthService {
   }
 
   /**
-   * Update user profile in Keycloak.
-   * @param profile Partial profile data to update
-   * @returns Promise that resolves when update is complete
+   * Redirects user to Keycloak account management page to update profile.
+   * @returns Promise that resolves when redirect is complete
    */
-  async updateUserProfile(profile: Partial<KeycloakProfile>): Promise<void> {
+  async updateUserProfile(): Promise<void> {
     try {
       if (!this.isLoggedIn()) {
         throw new Error('User not logged in');
       }
       
-      // TODO: backend user profile db
       // For now, redirect to Keycloak account management
       const accountUrl = this.keycloak.getKeycloakInstance().createAccountUrl();
       window.open(accountUrl, '_blank');
