@@ -7,108 +7,7 @@
   } @else {
     <div class="analysis-header">
       <h1>Performance Analysis</h1>
-      <p class="subtitle">Compare your metrics to age group averages (Age: {{ userAge }})</p>
-    </div>
-
-    <!-- Current Performance Comparison -->
-    <div class="comparisons-section">
-      <h2 class="section-title">Current Performance</h2>
-      <p class="section-subtitle">Your latest metrics compared to age group benchmarks</p>
-    </div>
-
-    <div class="comparisons-grid">
-      @for (comparison of getActiveComparisons(); track comparison.metricType) {
-        <div class="comparison-card">
-          <div class="card-header">
-            <h3>{{ getMetricName(comparison.metricType) }}</h3>
-            <div class="rating-badge" [style.background-color]="getRatingColor(comparison.rating)">
-              {{ getRatingLabel(comparison.rating) }}
-            </div>
-          </div>
-
-          <div class="percentile-bar">
-            <div class="bar-info">
-              <div class="value-display">
-                <span class="value-label">Your Value</span>
-                <span class="value-number">{{ comparison.userValue }} <span class="unit">{{ getMetricUnit(comparison.metricType) }}</span></span>
-              </div>
-              <div class="value-display">
-                <span class="value-label">Average</span>
-                <span class="value-number">{{ comparison.average }} <span class="unit">{{ getMetricUnit(comparison.metricType) }}</span></span>
-              </div>
-              <div class="value-display compact">
-                <span class="compact-stat" [class.positive]="comparison.difference > 0" [class.negative]="comparison.difference < 0">
-                  {{ comparison.difference > 0 ? '+' : '' }}{{ comparison.difference.toFixed(1) }} ({{ comparison.differencePercentage > 0 ? '+' : '' }}{{ comparison.differencePercentage.toFixed(1) }}%)
-                </span>
-              </div>
-            </div>
-            <div class="bar-labels">
-              <span>{{ isLowerBetter(comparison.metricType) ? 'Best' : 'Worst' }}</span>
-              <span>{{ isLowerBetter(comparison.metricType) ? 'Worst' : 'Best' }}</span>
-            </div>
-            <div class="bar-container" [class.reversed]="isLowerBetter(comparison.metricType)">
-              <div class="bar-segment segment-1">
-                <span class="segment-value">{{ getSegmentValue(comparison, 'left') }}</span>
-              </div>
-              <div class="bar-segment segment-2"></div>
-              <div class="bar-segment segment-3">
-                <span class="segment-value">{{ comparison.percentiles.p50.toFixed(0) }}</span>
-              </div>
-              <div class="bar-segment segment-4"></div>
-              <div class="bar-segment segment-5">
-                <span class="segment-value">{{ getSegmentValue(comparison, 'right') }}</span>
-              </div>
-              <div 
-                class="user-marker" 
-                [style.left.%]="comparison.percentile"
-                [style.background-color]="getRatingColor(comparison.rating)"
-              >
-                <div class="marker-tooltip">
-                  {{ comparison.percentile.toFixed(0) }}th percentile<br>
-                  <strong>{{ comparison.userValue }}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
-
-    <!-- Historical Trend Charts -->
-    <div class="trends-section">
-      <h2 class="section-title">Historical Trends</h2>
-      <p class="section-subtitle">See how your performance has evolved over time compared to benchmarks</p>
-      
-      <div class="trends-grid">
-        @for (comparison of getActiveComparisons(); track comparison.metricType) {
-          <div class="trend-card">
-            <div class="trend-header">
-              <h3>{{ getMetricName(comparison.metricType) }}</h3>
-              <div class="rating-badge" [style.background-color]="getRatingColor(comparison.rating)">
-                {{ getRatingLabel(comparison.rating) }}
-              </div>
-            </div>
-            <div class="chart-wrapper">
-              <canvas 
-                baseChart
-                [data]="getChartData(comparison.metricType)"
-                [options]="getChartOptions(comparison.metricType)"
-                [type]="chartType">
-              </canvas>
-            </div>
-            <div class="chart-legend">
-              <div class="legend-item">
-                <span class="legend-color" style="background: #667eea;"></span>
-                <span class="legend-label">Your Value</span>
-              </div>
-              <div class="legend-item">
-                <span class="legend-color" style="background: #f59e0b; border: 2px dashed #f59e0b; background: transparent;"></span>
-                <span class="legend-label">Average</span>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
+      <p class="subtitle">Compare your metrics to age group averages (Age: {{ userAge() }})</p>
     </div>
 
     @if (comparisons().length === 0) {
@@ -116,6 +15,43 @@
         <div class="empty-icon">📊</div>
         <h2>No Data Available</h2>
         <p>Start tracking metrics to see your analysis.</p>
+      </div>
+    } @else {
+      <!-- Historical Trend Charts -->
+      <div class="trends-section">
+        <h2 class="section-title">Historical Trends</h2>
+        <p class="section-subtitle">See how your performance has evolved over time compared to benchmarks</p>
+        
+        <div class="trends-grid">
+          @for (comparison of getActiveComparisons(); track comparison.metricType) {
+            <div class="trend-card">
+              <div class="trend-header">
+                <h3>{{ getMetricName(comparison.metricType) }}</h3>
+                <div class="rating-badge" [style.background-color]="getRatingColor(comparison.rating)">
+                  {{ getRatingLabel(comparison.rating) }}
+                </div>
+              </div>
+              <div class="chart-wrapper">
+                <canvas 
+                  baseChart
+                  [data]="getChartData(comparison.metricType)"
+                  [options]="getChartOptions(comparison.metricType)"
+                  [type]="chartType">
+                </canvas>
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <span class="legend-color" style="background: #667eea;"></span>
+                  <span class="legend-label">Your Value</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-color" style="background: #f59e0b; border: 2px dashed #f59e0b; background: transparent;"></span>
+                  <span class="legend-label">Average</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
       </div>
     }
   }
