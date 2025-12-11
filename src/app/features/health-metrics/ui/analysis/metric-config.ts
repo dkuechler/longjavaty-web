@@ -29,6 +29,12 @@ export const METRIC_UNITS: Record<MeasurementType, string> = {
   [MeasurementType.STEPS]: 'steps',
 };
 
+/**
+ * Determine if lower values are better for a given metric type.
+ * Used to invert percentile zone ordering and chart display.
+ * @param metricType - The type of metric to check
+ * @returns True if lower values are better (e.g., resting heart rate), false otherwise
+ */
 export function isLowerBetter(metricType: MeasurementType): boolean {
   return metricType === MeasurementType.RESTING_HEART_RATE;
 }
