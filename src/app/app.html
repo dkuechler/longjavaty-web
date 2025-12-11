@@ -50,7 +50,7 @@
       </div>
       <div class="topbar-right">
         <div class="user-menu">
-          <button class="avatar" (click)="toggleUserMenu()" type="button">
+          <button class="avatar" (click)="toggleUserMenu()" type="button" aria-label="User menu" [attr.aria-expanded]="userMenuOpen()">
             <span>DK</span>
           </button>
           
