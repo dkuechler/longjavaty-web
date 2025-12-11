@@ -6,13 +6,14 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType, ChartDataset } from 'chart.js';
 import { BenchmarkService } from '../../../../core/services/benchmark.service';
 import { HealthMetricsStateService } from '../../data/health-metrics-state.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { UserComparison } from '../../../../core/models/benchmark.models';
 import { MetricSeries, MeasurementType } from '../../../../core/models/measurement.models';
 import { createBaseChartOptions } from './chart-config';
 import { createUserDataset, createAverageDataset, createZoneDataset } from './chart-datasets';
 import { getTooltipLabel, getTooltipColor } from './chart-tooltips';
 import { RATING_COLORS, RATING_LABELS, METRIC_NAMES, METRIC_UNITS, isLowerBetter } from './metric-config';
-import { getSegmentValue, calculateCenteredYAxis } from './chart-utils';
+import { calculateCenteredYAxis } from './chart-utils';
 
 @Component({
   selector: 'app-analysis',
@@ -24,9 +25,10 @@ import { getSegmentValue, calculateCenteredYAxis } from './chart-utils';
 export class AnalysisComponent implements OnInit, OnDestroy {
   private readonly benchmarkService = inject(BenchmarkService);
   private readonly metricsState = inject(HealthMetricsStateService);
+  private readonly authService = inject(AuthService);
   private readonly destroy$ = new Subject<void>();
 
-  userAge = 28;
+  userAge = signal<number>(28); // Default fallback
   comparisons = signal<UserComparison[]>([]);
   loading = signal(true);
   allMetrics = signal<MetricSeries[]>([]);
@@ -47,12 +49,24 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const age = this.authService.getUserAge();
+    if (age) {
+      this.userAge.set(age);
+    }
+
     this.metricsState.loadAllMetrics();
+    
     this.metricsState.allMetrics$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((metrics) => {
-        this.allMetrics.set(metrics);
-        this.loadComparisons(metrics);
+      .subscribe({
+        next: (metrics) => {
+          this.allMetrics.set(metrics);
+          this.loadComparisons(metrics);
+        },
+        error: (err) => {
+          console.error('Error loading metrics:', err);
+          this.loading.set(false);
+        }
       });
   }
 
@@ -64,7 +78,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         return this.benchmarkService.compareUserToAgeGroup(
           metric.measurementType,
           latestValue,
-          this.userAge
+          this.userAge()
         );
       });
 
@@ -112,8 +126,34 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     return this.comparisons().filter(c => c.metricType !== MeasurementType.STEPS);
   }
 
-  getSegmentValue(comparison: UserComparison, position: 'left' | 'right'): string {
-    return getSegmentValue(comparison, position);
+  /**
+   * Create zone datasets for metrics where lower values are better (e.g., resting heart rate).
+   * Zones are ordered from best (athletic) at bottom to worst (needs improvement) at top.
+   */
+  private createLowerIsBetterZones(dates: Date[], percentiles: any): any[] {
+    return [
+      createZoneDataset('Athletic Range', dates, percentiles.p10, 'rgba(16, 185, 129, 0.2)', 'origin', 7),
+      createZoneDataset('Excellent Range', dates, percentiles.p25, 'rgba(16, 185, 129, 0.15)', '-1', 6),
+      createZoneDataset('Good Range', dates, percentiles.p50, 'rgba(59, 130, 246, 0.15)', '-1', 5),
+      createZoneDataset('Average Range', dates, percentiles.p75, 'rgba(245, 158, 11, 0.15)', '-1', 4),
+      createZoneDataset('Below Average', dates, percentiles.p90, 'rgba(239, 68, 68, 0.15)', '-1', 3),
+      createZoneDataset('Needs Improvement', dates, percentiles.p90 + 10, 'rgba(220, 38, 38, 0.15)', '-1', 2),
+    ];
+  }
+
+  /**
+   * Create zone datasets for metrics where higher values are better (e.g., VO2 max).
+   * Zones are ordered from worst (needs improvement) at bottom to best (outstanding) at top.
+   */
+  private createHigherIsBetterZones(dates: Date[], percentiles: any): any[] {
+    return [
+      createZoneDataset('Needs Improvement', dates, percentiles.p10, 'rgba(220, 38, 38, 0.15)', 'origin', 7),
+      createZoneDataset('Below Average', dates, percentiles.p25, 'rgba(239, 68, 68, 0.15)', '-1', 6),
+      createZoneDataset('Average Range', dates, percentiles.p50, 'rgba(245, 158, 11, 0.15)', '-1', 5),
+      createZoneDataset('Good Range', dates, percentiles.p75, 'rgba(59, 130, 246, 0.15)', '-1', 4),
+      createZoneDataset('Excellent Range', dates, percentiles.p90, 'rgba(16, 185, 129, 0.15)', '-1', 3),
+      createZoneDataset('Outstanding', dates, percentiles.p90 + 10, 'rgba(16, 185, 129, 0.2)', '-1', 2),
+    ];
   }
 
   getChartData(metricType: MeasurementType): ChartConfiguration<'line'>['data'] {
@@ -127,35 +167,18 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     const dates = metric.data.map(d => d.timestamp);
     const isLower = isLowerBetter(metricType);
 
-    if (isLower) {
-      return {
-        labels: dates,
-        datasets: [
-          createUserDataset(metric),
-          createAverageDataset(dates, average),
-          createZoneDataset('Athletic Range', dates, percentiles.p10, 'rgba(16, 185, 129, 0.2)', 'origin', 7),
-          createZoneDataset('Excellent Range', dates, percentiles.p25, 'rgba(16, 185, 129, 0.15)', '-1', 6),
-          createZoneDataset('Good Range', dates, percentiles.p50, 'rgba(59, 130, 246, 0.15)', '-1', 5),
-          createZoneDataset('Average Range', dates, percentiles.p75, 'rgba(245, 158, 11, 0.15)', '-1', 4),
-          createZoneDataset('Below Average', dates, percentiles.p90, 'rgba(239, 68, 68, 0.15)', '-1', 3),
-          createZoneDataset('Needs Improvement', dates, percentiles.p90 + 10, 'rgba(220, 38, 38, 0.15)', '-1', 2),
-        ] as any,
-      };
-    } else {
-      return {
-        labels: dates,
-        datasets: [
-          createUserDataset(metric),
-          createAverageDataset(dates, average),
-          createZoneDataset('Needs Improvement', dates, percentiles.p10, 'rgba(220, 38, 38, 0.15)', 'origin', 7),
-          createZoneDataset('Below Average', dates, percentiles.p25, 'rgba(239, 68, 68, 0.15)', '-1', 6),
-          createZoneDataset('Average Range', dates, percentiles.p50, 'rgba(245, 158, 11, 0.15)', '-1', 5),
-          createZoneDataset('Good Range', dates, percentiles.p75, 'rgba(59, 130, 246, 0.15)', '-1', 4),
-          createZoneDataset('Excellent Range', dates, percentiles.p90, 'rgba(16, 185, 129, 0.15)', '-1', 3),
-          createZoneDataset('Outstanding', dates, percentiles.p90 + 10, 'rgba(16, 185, 129, 0.2)', '-1', 2),
-        ] as any,
-      };
-    }
+    const zoneDatasets = isLower 
+      ? this.createLowerIsBetterZones(dates, percentiles)
+      : this.createHigherIsBetterZones(dates, percentiles);
+
+    return {
+      labels: dates,
+      datasets: [
+        createUserDataset(metric),
+        createAverageDataset(dates, average),
+        ...zoneDatasets,
+      ],
+    };
   }
 
   getChartOptions(metricType: MeasurementType): ChartConfiguration['options'] {
