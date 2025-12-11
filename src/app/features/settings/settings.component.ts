@@ -36,7 +36,7 @@ export class SettingsComponent implements OnInit {
         this.profile.set(profile);
       }
     } catch (err) {
-      this.error.set('Failed to load profile');
+      this.error.set('Unable to load your profile. Please try refreshing the page or contact support if the issue persists.');
       console.error('Error loading profile:', err);
     } finally {
       this.loading.set(false);
