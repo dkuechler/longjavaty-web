@@ -1,92 +1,26 @@
-<div class="dashboard-container">
+<div class="dashboard">
+  <h1>Dashboard</h1>
+
   @if (allMetrics$ | async; as metrics) {
     @if (metrics.length > 0) {
-      <!-- Chart Section -->
       <div class="chart-container">
-        <div class="chart-header">
-          <div>
-            <h2>Metrics Timeline</h2>
-            <p class="chart-description">Track your health metrics over time</p>
-          </div>
-          
-          <!-- Metric Filter Buttons -->
-          <div class="metric-filters">
-            <button 
-              class="filter-btn" 
-              [class.active]="isFilterActive('all')"
-              (click)="setFilter('all')"
-            >
-              All Metrics
-            </button>
-            @for (metric of metrics; track metric.measurementType) {
-              <button 
-                class="filter-btn" 
-                [class.active]="isFilterActive(metric.measurementType)"
-                [style.--metric-color]="metric.color"
-                (click)="setFilter(metric.measurementType)"
-              >
-                {{ metric.label }}
-              </button>
-            }
-          </div>
-        </div>
-        
-        <div class="chart-wrapper">
-          <canvas
-            baseChart
-            [data]="lineChartData()"
-            [options]="lineChartOptions()"
-            [type]="lineChartType"
-          ></canvas>
-        </div>
-
-        <!-- Custom Legend -->
-        <div class="metrics-legend">
-          @for (metric of metrics; track metric.measurementType) {
-            @if (metric.data && metric.data.length > 0) {
-              @let lastDataPoint = metric.data[metric.data.length - 1];
-              @if (lastDataPoint) {
-                <div
-                  class="legend-item"
-                  [class.hovered]="isMetricHovered(metric.measurementType)"
-                  (mouseenter)="onMetricHover(metric.measurementType)"
-                  (mouseleave)="onMetricLeave()"
-                >
-                  <div class="legend-color" [style.background-color]="metric.color"></div>
-                  <div class="legend-content">
-                    <span class="legend-label">{{ metric.label }}</span>
-                    <span class="legend-value">
-                      {{ lastDataPoint.value }}
-                      {{ lastDataPoint.unit }}
-                    </span>
-                  </div>
-                  <div class="legend-indicator">
-                    <svg width="16" height="16" viewBox="0 0 16 16">
-                      <path
-                        d="M2 8 L8 2 L14 8"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        fill="none"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              }
-            }
-          }
-        </div>
+        <h2>Metrics Timeline</h2>
+        <canvas
+          baseChart
+          [data]="lineChartData()"
+          [options]="lineChartOptions()"
+          [type]="lineChartType"
+        ></canvas>
       </div>
     } @else {
-      <div class="empty-state">
-        <div class="empty-icon">📊</div>
-        <h2>No Data Yet</h2>
-        <p>Start tracking your health metrics to see insights here.</p>
+      <div class="empty">
+        <p>No data yet. Start tracking your health metrics!</p>
       </div>
     }
   } @else {
-    <div class="loading-state">
+    <div class="loading">
       <div class="spinner"></div>
-      <p>Loading your health metrics...</p>
+      <p>Loading...</p>
     </div>
   }
 </div>

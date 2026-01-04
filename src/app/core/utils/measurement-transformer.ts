@@ -20,7 +20,7 @@ export class MeasurementTransformer {
     };
   }
 
-  // Zips parallel API responses with their types: [VO2_MAX[], STEPS[]] → [VO2_MAX series, STEPS series]
+  // Zips parallel API responses with their types: [VO2_MAX[], RESTING_HEART_RATE[]] → [VO2_MAX series, RESTING_HEART_RATE series]
   static toMultipleMetricSeries(
     measurementTypes: MeasurementType[],
     measurementArrays: MeasurementResponse[][]

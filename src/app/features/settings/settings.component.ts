@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
+import { UserApiService } from '../../core/services/user-api.service';
 import { KeycloakProfile } from 'keycloak-js';
 
 @Component({
@@ -13,10 +14,12 @@ import { KeycloakProfile } from 'keycloak-js';
 })
 export class SettingsComponent implements OnInit {
   readonly authService = inject(AuthService);
+  private readonly userApiService = inject(UserApiService);
   private readonly fb = inject(FormBuilder);
 
   loading = signal(true);
   deleting = signal(false);
+  exporting = signal(false);
   profile = signal<KeycloakProfile | null>(null);
   error = signal<string | null>(null);
   success = signal<string | null>(null);
@@ -53,20 +56,13 @@ export class SettingsComponent implements OnInit {
     this.success.set(null);
 
     try {
-      // TODO: Implement backend API endpoint to delete user data
-      // This should:
-      // 1. Delete all health metrics data
-      // 2. Delete user preferences
-      // 3. Optionally delete Keycloak account (or mark for deletion)
-      console.log('Delete all data for user:', this.authService.getUserId());
+      await this.userApiService.deleteUserData().toPromise();
+      this.success.set('All your data has been deleted. Logging out...');
       
-      // Placeholder: Show success message
-      this.success.set('Data deletion request submitted. You will be logged out.');
-      
-      // After deletion, log out user
+      // Log out after successful deletion
       setTimeout(() => {
         this.authService.logout();
-      }, 2000);
+      }, 1500);
     } catch (err) {
       this.error.set('Failed to delete data. Please try again.');
       console.error('Error deleting data:', err);
@@ -75,7 +71,37 @@ export class SettingsComponent implements OnInit {
     }
   }
 
+  async exportData(): Promise<void> {
+    this.exporting.set(true);
+    this.error.set(null);
+    this.success.set(null);
+
+    try {
+      const data = await this.userApiService.exportUserData().toPromise();
+      
+      // Create downloadable JSON file
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `health-data-export-${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+      
+      this.success.set('Data exported successfully!');
+    } catch (err) {
+      this.error.set('Failed to export data. Please try again.');
+      console.error('Error exporting data:', err);
+    } finally {
+      this.exporting.set(false);
+    }
+  }
+
   openKeycloakAccount(): void {
     this.authService.updateUserProfile();
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }

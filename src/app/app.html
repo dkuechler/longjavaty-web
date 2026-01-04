@@ -1,89 +1,12 @@
-<div class="app-layout">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <rect width="32" height="32" rx="8" fill="url(#gradient)" />
-          <path d="M16 8L20 16L16 24L12 16L16 8Z" fill="white" />
-          <defs>
-            <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
-              <stop offset="0%" stop-color="#667eea" />
-              <stop offset="100%" stop-color="#764ba2" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <span class="logo-text">JBench</span>
-      </div>
-    </div>
+<div class="layout">
+  <nav class="sidebar">
+    <h1>longjavaty</h1>
+    <a routerLink="" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Dashboard</a>
+    <a routerLink="/settings" routerLinkActive="active">Settings</a>
+    <a href="https://github.com/dkuechler/appleWatch-Zone2-pilot/blob/main/PRIVACY.md" target="_blank">Privacy</a>
+  </nav>
 
-    <nav class="sidebar-nav">
-      <a routerLink="" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M3 13h4v6H3v-6zm6-8h4v14H9V5zm6 4h4v10h-4V9z" />
-        </svg>
-        <span>Dashboard</span>
-      </a>
-      <a routerLink="/analysis" routerLinkActive="active" class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M10 2L3 7v9a2 2 0 002 2h10a2 2 0 002-2V7l-7-5z" />
-          <path d="M7 15h6M10 11v4" stroke-linecap="round" />
-        </svg>
-        <span>Analysis</span>
-      </a>
-    </nav>
-
-    <div class="sidebar-footer">
-      <a href="https://github.com/dkuechler/appleWatch-Zone2-pilot/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M10 2a4 4 0 014 4v2h1a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2h1V6a4 4 0 014-4z" stroke-linecap="round" />
-          <circle cx="10" cy="13" r="1" />
-        </svg>
-        <span>Privacy</span>
-      </a>
-    </div>
-  </aside>
-
-  <main class="main-content">
-    <header class="topbar">
-      <div class="topbar-left">
-        <h1 class="page-title">Health Metrics</h1>
-      </div>
-      <div class="topbar-right">
-        <div class="user-menu">
-          <button 
-            class="avatar" 
-            (click)="toggleUserMenu()" 
-            (keydown.enter)="toggleUserMenu()"
-            (keydown.space)="toggleUserMenu(); $event.preventDefault()"
-            type="button" 
-            aria-label="User menu" 
-            [attr.aria-expanded]="userMenuOpen()">
-            <span>DK</span>
-          </button>
-          
-          @if (userMenuOpen()) {
-            <div class="user-menu-dropdown" role="menu" aria-label="User menu">
-              <a 
-                routerLink="/settings" 
-                (click)="closeUserMenu()" 
-                (keydown.escape)="closeUserMenu()"
-                class="menu-item"
-                role="menuitem"
-                tabindex="0">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="8" cy="8" r="3" />
-                  <path d="M8 1v2m0 10v2M1 8h2m10 0h2m-2.93-5.07l-1.41 1.41M5.34 11.66l-1.41 1.41m9.14 0l-1.41-1.41M5.34 4.34L3.93 2.93" stroke-linecap="round" />
-                </svg>
-                Settings
-              </a>
-            </div>
-          }
-        </div>
-      </div>
-    </header>
-
-    <div class="content-wrapper">
-      <router-outlet></router-outlet>
-    </div>
+  <main>
+    <router-outlet></router-outlet>
   </main>
 </div>

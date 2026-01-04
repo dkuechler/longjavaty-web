@@ -28,11 +28,19 @@ export function createDashboardChartOptions(): ChartConfiguration['options'] {
       x: {
         type: 'time',
         time: {
-          unit: 'day',
-          displayFormats: { day: 'MMM d' },
+          unit: 'week',
+          displayFormats: { 
+            week: 'MMM d',
+            month: 'MMM yyyy'
+          },
+          tooltipFormat: 'MMM d, yyyy'
         },
         grid: { display: false },
-        ticks: { font: { size: 11 } },
+        ticks: { 
+          font: { size: 11 },
+          maxTicksLimit: 6,
+          source: 'auto'
+        },
       },
       y: {
         type: 'linear',
@@ -44,19 +52,6 @@ export function createDashboardChartOptions(): ChartConfiguration['options'] {
         title: {
           display: true,
           text: 'Heart Rate (bpm) / VO2 Max',
-          font: { size: 11 },
-        },
-      },
-      y1: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        beginAtZero: false,
-        grid: { drawOnChartArea: false },
-        ticks: { font: { size: 11 } },
-        title: {
-          display: true,
-          text: 'Steps',
           font: { size: 11 },
         },
       },

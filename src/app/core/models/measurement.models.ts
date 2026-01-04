@@ -1,7 +1,6 @@
 export enum MeasurementType {
   RESTING_HEART_RATE = 'RESTING_HEART_RATE',
   VO2_MAX = 'VO2_MAX',
-  STEPS = 'STEPS',
 }
 
 export interface MeasurementRequest {
@@ -40,11 +39,9 @@ export interface MetricSeries {
 export const MEASUREMENT_TYPE_LABELS: Record<MeasurementType, string> = {
   [MeasurementType.RESTING_HEART_RATE]: 'Resting Heart Rate',
   [MeasurementType.VO2_MAX]: 'VO2 Max',
-  [MeasurementType.STEPS]: 'Steps',
 };
 
 export const MEASUREMENT_TYPE_COLORS: Record<MeasurementType, string> = {
   [MeasurementType.RESTING_HEART_RATE]: '#f97316',
   [MeasurementType.VO2_MAX]: '#3b82f6',
-  [MeasurementType.STEPS]: '#10b981',
 };
